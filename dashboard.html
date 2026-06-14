@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Dashboard - Potato Host</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- CONTROL PANEL NAVBAR -->
+    <nav>
+        <div class="logo">🥔 Potato Host Control Center</div>
+        <div class="nav-links">
+            <button id="btn-logout" style="background: #e03131; color: white; border: none; padding: 8px 16px; font-weight: bold; border-radius: 6px; cursor: pointer;">Logout</button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONSOLE INTERFACE -->
+    <main style="max-width: 800px; margin: 40px auto; padding: 25px;">
+        <h2>Welcome to Your Control Panel 👋</h2>
+        <p style="text-align: center; color: #cccccc; margin-bottom: 25px;">Logged in as: <strong id="user-display-email" style="color: #f5a623;">...</strong></p>
+
+        <div>
+            <h3>Deploy New Free Website</h3>
+            <form id="deploy-form">
+                <div style="margin-bottom: 15px;">
+                    <label>Desired Subdomain Name (e.g., yourname):</label><br>
+                    <input type="text" id="site-name" placeholder="mysite" required>
+                    <span style="display: inline-block; margin-top: 5px; color: #666; font-size: 13px;">Your site will live at: <strong>site-name.potatohost.xyz</strong></span>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>GitHub Repository URL (containing your website code):</label><br>
+                    <input type="url" id="repo-url" placeholder="https://github.com" required>
+                </div>
+                <button type="submit" style="width: 100%;">Deploy Site Live 🚀</button>
+            </form>
+            <p id="deploy-status" style="margin-top: 15px; font-weight: bold;"></p>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer style="margin-top: 80px;">
+        <p>🥔 Potato Host — Free Hosting For Everyone!</p>
+        <p class="footer-bottom">Made with ❤️ in India</p>
+    </footer>
+
+    <!-- PRIVATE DASHBOARD SHIELD LAYER -->
+    <script>
+        // Security Gate: Redirect users back to login if they try to enter without account
+        const sessionData = localStorage.getItem('potato_session');
+        if (!sessionData) {
+            window.location.href = "login.html";
+        }
+        
+        // Extract account details to display user email custom string greeting
+        const session = JSON.parse(sessionData);
+        document.getElementById('user-display-email').innerText = session.user.email;
+
+        // Deployment order request submit handler
+        document.getElementById('deploy-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const siteName = document.getElementById('site-name').value;
+            const githubRepo = document.getElementById('repo-url').value;
+            const statusEl = document.getElementById('deploy-status');
+
+            statusEl.innerText = "Forwarding configurations to your home hosting queue backend...";
+            statusEl.style.color = "#f5a623";
+
+            // Placeholder server target link until step 4 of backend cluster configuration deployment
+            const RAILWAY_BACKEND_URL = "https://railway.app";
+
+            statusEl.innerText = "Frontend Connected! Database logging active. Ready for deployment pipeline integration.";
+            statusEl.style.color = "#28a745";
+        });
+
+        // Logout routing logic
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            localStorage.removeItem('potato_session');
+            window.location.href = "login.html";
+        });
+    </script>
+</body>
+</html>

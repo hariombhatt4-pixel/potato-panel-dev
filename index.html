@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Potato Host - Free web hosting for everyone! No credit card needed!">
+    <meta name="keywords" content="free hosting, web hosting, free website, potato host">
+    <title>Potato Host - Free Web Hosting</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Include Supabase JS Library to track logged-in sessions -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav>
+        <div class="logo">🥔 Potato Host</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="faq.html">FAQ</a>
+            <a href="status.html">Status</a>
+            <a href="contact.html">Contact</a>
+            <a href="login.html" id="nav-login-btn">Login</a>
+            <a href="register.html" class="btn-register" id="nav-start-btn">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <h1>Free Web Hosting<br>For Everyone! 🥔</h1>
+        <p>Host your website completely free!<br>No credit card, No hidden fees, Just upload and go!</p>
+        <a href="register.html" class="btn-hero" id="hero-start-btn">Start Hosting Free 🚀</a>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section class="features">
+        <h2>Why Potato Host?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>🆓 100% Free</h3>
+                <p>No credit card needed. No hidden fees. Forever free!</p>
+            </div>
+            <div class="feature-card">
+                <h3>⚡ Fast</h3>
+                <p>Powered by Cloudflare. Your site loads super fast!</p>
+            </div>
+            <div class="feature-card">
+                <h3>🛡️ Secure</h3>
+                <p>DDoS protection included. Your site stays safe!</p>
+            </div>
+            <div class="feature-card">
+                <h3>📁 100MB Storage</h3>
+                <p>Enough space for your HTML/CSS website!</p>
+            </div>
+            <div class="feature-card">
+                <h3>🌐 Free Subdomain</h3>
+                <p>Get your own username.potatohost.xyz instantly!</p>
+            </div>
+            <div class="feature-card">
+                <h3>🆘 Discord Support</h3>
+                <p>Get help instantly on our Discord server!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>🥔 Potato Host — Free Hosting For Everyone!</p>
+        <div class="footer-links">
+            <a href="terms.html">Terms of Service</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <p class="footer-bottom">Made with ❤️ in India</p>
+    </footer>
+
+    <!-- SESSION CHECK SCRIPT -->
+    <script>
+        // Check if the user is already logged in
+        const sessionData = localStorage.getItem('potato_session');
+        
+        if (sessionData) {
+            // Change buttons to send logged-in users straight to the dashboard
+            document.getElementById('nav-login-btn').innerText = "Dashboard";
+            document.getElementById('nav-login-btn').href = "dashboard.html";
+            
+            document.getElementById('nav-start-btn').innerText = "Console";
+            document.getElementById('nav-start-btn').href = "dashboard.html";
+            
+            document.getElementById('hero-start-btn').innerText = "Open Dashboard 💻";
+            document.getElementById('hero-start-btn').href = "dashboard.html";
+        }
+    </script>
+</body>
+</html>

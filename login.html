@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Potato Host</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">🥔 Potato Host</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+            <a href="register.html" class="btn-register">Get Started</a>
+        </div>
+    </nav>
+
+    <section class="auth-section" style="max-width: 400px; margin: 50px auto; padding: 20px;">
+        <h2>User Login 🥔</h2>
+        <form id="login-form">
+            <div style="margin-bottom: 15px;">
+                <label>Email Address:</label><br>
+                <input type="email" id="login-email" placeholder="enter your email" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>Password:</label><br>
+                <input type="password" id="login-password" placeholder="enter password" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <button type="submit" style="width: 100%; padding: 10px;">Login</button>
+        </form>
+        <p id="login-message" style="margin-top: 15px; font-weight: bold;"></p>
+    </section>
+
+    <script>
+        // Check if session already exists
+        if (localStorage.getItem('potato_session')) {
+            window.location.href = "dashboard.html";
+        }
+
+        const SUPABASE_URL = "https://supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZiZWd2d3pmbnRjanFuZ2Fnb3lhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MjA3NTksImV4cCI6MjA5Njk5Njc1OX0.a5JrlBLKkfvJr4KQBfn8xTJ4lSaLtrbnKXF9lmlQInQ";
+        
+        // Simple direct client initialization
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const messageEl = document.getElementById('login-message');
+
+            messageEl.style.color = "orange";
+            messageEl.innerText = "Checking credentials...";
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                if (error) {
+                    messageEl.style.color = "red";
+                    messageEl.innerText = "Error: " + error.message;
+                } else if (data && data.session) {
+                    messageEl.style.color = "green";
+                    messageEl.innerText = "Success! Redirecting...";
+                    localStorage.setItem('potato_session', JSON.stringify(data.session));
+                    window.location.href = "dashboard.html";
+                } else {
+                    messageEl.style.color = "red";
+                    messageEl.innerText = "An unknown login error occurred.";
+                }
+            } catch (err) {
+                messageEl.style.color = "red";
+                messageEl.innerText = "Network Error: Cannot connect to database.";
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>
