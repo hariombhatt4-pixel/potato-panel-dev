@@ -52,41 +52,41 @@
 
     <!-- ALL-IN-ONE ENCRYPTED CLOUD ENGINE SCRIPT -->
     <script type="module">
-        // Direct, modern module injection that bypasses network blocks completely
-        import { createClient } from 'https://esm.sh';
+    import { createClient } from 'https://jsdelivr.net';
 
-        // 🛡️ SECURITY GUARD: If already logged in, bounce to dashboard instantly!
-        if (localStorage.getItem('potato_session')) {
-            window.location.href = "dashboard.html";
-        }
+    // 🛡️ SECURITY GUARD: Redirect to dashboard if logged in
+    if (localStorage.getItem('potato_session')) {
+        window.location.href = "dashboard.html";
+    }
 
-        const SUPABASE_URL = "https://supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZiZWd2d3pmbnRjanFuZ2Fnb3lhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MjA3NTksImV4cCI6MjA5Njk5Njc1OX0.a5JrlBLKkfvJr4KQBfn8xTJ4lSaLtrbnKXF9lmlQInQ";
-        
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_URL = "https://supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZiZWd2d3pmbnRjanFuZ2Fnb3lhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MjA3NTksImV4cCI6MjA5Njk5Njc1OX0.a5JrlBLKkfvJr4KQBfn8xTJ4lSaLtrbnKXF9lmlQInQ";
+    
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            const messageEl = document.getElementById('reg-message');
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('reg-email').value;
+        const password = document.getElementById('reg-password').value;
+        const messageEl = document.getElementById('reg-message');
 
-            messageEl.style.color = "orange";
-            messageEl.innerText = "Creating account...";
+        messageEl.style.color = "orange";
+        messageEl.innerText = "Creating account...";
 
-            const { data, error } = await supabaseClient.auth.signUp({
-                email: email,
-                password: password,
-            });
-
-            if (error) {
-                messageEl.style.color = "red";
-                messageEl.innerText = "Error: " + error.message;
-            } else {
-                messageEl.style.color = "green";
-                messageEl.innerText = "Registration successful! You can now click Login to enter your dashboard.";
-            }
+        const { data, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
         });
-    </script>
+
+        if (error) {
+            messageEl.style.color = "red";
+            messageEl.innerText = "Error: " + error.message;
+        } else {
+            messageEl.style.color = "green";
+            messageEl.innerText = "Registration successful! You can now click Login to enter your dashboard.";
+        }
+    });
+</script>
+
 </body>
 </html>
