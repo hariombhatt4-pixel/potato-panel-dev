@@ -61,6 +61,7 @@
 
     <!-- PRIVATE DASHBOARD SHIELD LAYER -->
         <!-- PRIVATE DASHBOARD SHIELD LAYER -->
+        <!-- PRIVATE DASHBOARD SHIELD LAYER -->
     <script>
         // Security Gate: Redirect users back to login if they try to enter without an account
         const sessionData = localStorage.getItem('potato_session');
@@ -72,20 +73,17 @@
         const session = JSON.parse(sessionData);
         document.getElementById('user-display-email').innerText = session.user.email;
 
-        // 🎯 YOUR REAL LIVE ENDPOINT - LOCKED ONTO YOUR PROJECT CONTAINER
+        // 🎯 THE REAL PROJECT INSTANCE LOCK
         const SUPABASE_URL = "https://vbegvwzfntcjqngagoya.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZiZWd2d3pmbnRjanFuZ2Fnb3lhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MjA3NTksImV4cCI6MjA5Njk5Njc1OX0.a5JrlBLKkfvJr4KQBfn8xTJ4lSaLtrbnKXF9lmlQInQ";
-        
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Function to look up user data usage in real-time
         async function checkStorageLimits() {
-            // Maximum allocated storage rule (100 MB in bytes)
-            const MAX_ALLOWED_BYTES = 100 * 1024 * 1024; 
+            const MAX_ALLOWED_BYTES = 100 * 1024 * 1024; // 100 MB in bytes
             let userUsedBytes = 0; 
 
             try {
-                // Fetch the site data for this logged-in user using plain fetch to keep it lightweight
+                // Fetch the site data for this logged-in user using standard fetch
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/user_websites?user_id=eq.${session.user.id}`, {
                     method: 'GET',
                     headers: {
@@ -96,8 +94,8 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    // Accumulate storage bytes used across all projects matching this user
                     if (data && data.length > 0) {
+                        // Total up storage used across all projects matching this user
                         userUsedBytes = data.reduce((acc, current) => acc + parseInt(current.storage_used_bytes || 0), 0);
                     }
                 }
@@ -109,10 +107,10 @@
             let percentage = (userUsedBytes / MAX_ALLOWED_BYTES) * 100;
             if (percentage > 100) percentage = 100;
 
-            // Convert bytes into human-readable Megabytes
+            // Convert bytes into Megabytes for display
             let usedMB = (userUsedBytes / (1024 * 1024)).toFixed(2);
 
-            // Update UI elements smoothly
+            // Update UI progress meter smoothly
             document.getElementById('storage-bar').style.width = percentage + "%";
             document.getElementById('storage-text').innerText = usedMB + " MB";
         }
@@ -134,7 +132,7 @@
             const githubRepo = document.getElementById('repo-url').value.trim();
             const statusEl = document.getElementById('deploy-status');
 
-            statusEl.innerText = "Checking backend allocations and registering subdomain...";
+            statusEl.innerText = "Checking allocations and registering subdomain...";
             statusEl.style.color = "#f5a623";
 
             try {
@@ -151,13 +149,14 @@
                         user_id: session.user.id,
                         user_email: session.user.email,
                         subdomain: siteName,
-                        storage_used_bytes: 0
+                        storage_used_bytes: 0 // Starts fresh at 0
                     })
                 });
 
                 const data = await response.json();
 
                 if (!response.ok) {
+                    // Catch duplicate errors if someone else claimed that subdomain name first
                     if (data.message && data.message.includes('unique')) {
                         throw new Error(`The subdomain "${siteName}" is already taken by another potato!`);
                     }
@@ -167,7 +166,7 @@
                 statusEl.innerText = `Success! ${siteName}.potatohost.xyz has been locked in. Queued for pipeline integration! 🥔🚀`;
                 statusEl.style.color = "#28a745";
                 
-                // Clear inputs and refresh usage tracking metrics
+                // Clear the form input elements and refresh the user storage bars
                 document.getElementById('deploy-form').reset();
                 document.getElementById('subdomain-preview').innerText = "site-name.potatohost.xyz";
                 checkStorageLimits();
