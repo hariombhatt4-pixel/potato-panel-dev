@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Client Dashboard - Potato Host</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Load your awesome custom Supabase wrapper -->
+    <script src="supabase.js"></script>
 </head>
 <body>
 
@@ -21,17 +23,29 @@
         <h2>Welcome to Your Control Panel 👋</h2>
         <p style="text-align: center; color: #cccccc; margin-bottom: 25px;">Logged in as: <strong id="user-display-email" style="color: #f5a623;">...</strong></p>
 
+        <!-- VISUAL STORAGE METER -->
+        <div style="margin-bottom: 30px; background-color: #141414 !important; padding: 20px !important; border: 1px solid #333; border-radius: 8px;">
+            <h3 style="margin-bottom: 10px;">📦 Your Storage Usage</h3>
+            <div style="width: 100%; background-color: #0f0f0f; border-radius: 10px; height: 20px; overflow: hidden; border: 1px solid #333; position: relative;">
+                <div id="storage-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f5a623, #d4891a); transition: width 0.5s ease-in-out;"></div>
+            </div>
+            <p style="margin-top: 8px; font-size: 14px; color: #cccccc; display: flex; justify-content: space-between;">
+                <span>Used: <strong id="storage-text" style="color: #f5a623;">0 MB</strong></span>
+                <span>Limit: <strong>100 MB</strong></span>
+            </p>
+        </div>
+
         <div>
             <h3>Deploy New Free Website</h3>
             <form id="deploy-form">
                 <div style="margin-bottom: 15px;">
                     <label>Desired Subdomain Name (e.g., yourname):</label><br>
-                    <input type="text" id="site-name" placeholder="mysite" required>
-                    <span style="display: inline-block; margin-top: 5px; color: #666; font-size: 13px;">Your site will live at: <strong>site-name.potatohost.xyz</strong></span>
+                    <input type="text" id="site-name" placeholder="mysite" required style="width: 100%;">
+                    <span style="display: inline-block; margin-top: 5px; color: #666; font-size: 13px;">Your site will live at: <strong id="subdomain-preview">site-name.potatohost.xyz</strong></span>
                 </div>
                 <div style="margin-bottom: 15px;">
                     <label>GitHub Repository URL (containing your website code):</label><br>
-                    <input type="url" id="repo-url" placeholder="https://github.com" required>
+                    <input type="url" id="repo-url" placeholder="https://github.com" required style="width: 100%;">
                 </div>
                 <button type="submit" style="width: 100%;">Deploy Site Live 🚀</button>
             </form>
@@ -46,32 +60,123 @@
     </footer>
 
     <!-- PRIVATE DASHBOARD SHIELD LAYER -->
+        <!-- PRIVATE DASHBOARD SHIELD LAYER -->
     <script>
-        // Security Gate: Redirect users back to login if they try to enter without account
+        // Security Gate: Redirect users back to login if they try to enter without an account
         const sessionData = localStorage.getItem('potato_session');
         if (!sessionData) {
             window.location.href = "login.html";
         }
         
-        // Extract account details to display user email custom string greeting
+        // Extract account details
         const session = JSON.parse(sessionData);
         document.getElementById('user-display-email').innerText = session.user.email;
 
-        // Deployment order request submit handler
+        // 🎯 YOUR REAL LIVE ENDPOINT - LOCKED ONTO YOUR PROJECT CONTAINER
+        const SUPABASE_URL = "https://vbegvwzfntcjqngagoya.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZiZWd2d3pmbnRjanFuZ2Fnb3lhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MjA3NTksImV4cCI6MjA5Njk5Njc1OX0.a5JrlBLKkfvJr4KQBfn8xTJ4lSaLtrbnKXF9lmlQInQ";
+        
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Function to look up user data usage in real-time
+        async function checkStorageLimits() {
+            // Maximum allocated storage rule (100 MB in bytes)
+            const MAX_ALLOWED_BYTES = 100 * 1024 * 1024; 
+            let userUsedBytes = 0; 
+
+            try {
+                // Fetch the site data for this logged-in user using plain fetch to keep it lightweight
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/user_websites?user_id=eq.${session.user.id}`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${session.access_token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // Accumulate storage bytes used across all projects matching this user
+                    if (data && data.length > 0) {
+                        userUsedBytes = data.reduce((acc, current) => acc + parseInt(current.storage_used_bytes || 0), 0);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to read server bytes telemetry:", err);
+            }
+
+            // Calculate percentage for progress meter styling
+            let percentage = (userUsedBytes / MAX_ALLOWED_BYTES) * 100;
+            if (percentage > 100) percentage = 100;
+
+            // Convert bytes into human-readable Megabytes
+            let usedMB = (userUsedBytes / (1024 * 1024)).toFixed(2);
+
+            // Update UI elements smoothly
+            document.getElementById('storage-bar').style.width = percentage + "%";
+            document.getElementById('storage-text').innerText = usedMB + " MB";
+        }
+
+        // Run the storage check instantly when the dashboard opens
+        checkStorageLimits();
+
+        // Update subdomain preview live as the user types
+        document.getElementById('site-name').addEventListener('input', (e) => {
+            const val = e.target.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+            e.target.value = val; // Force clean alphanumeric subdomains
+            document.getElementById('subdomain-preview').innerText = val ? `${val}.potatohost.xyz` : "site-name.potatohost.xyz";
+        });
+
+        // Live Deployment Order Request Submit Handler
         document.getElementById('deploy-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const siteName = document.getElementById('site-name').value;
-            const githubRepo = document.getElementById('repo-url').value;
+            const siteName = document.getElementById('site-name').value.trim().toLowerCase();
+            const githubRepo = document.getElementById('repo-url').value.trim();
             const statusEl = document.getElementById('deploy-status');
 
-            statusEl.innerText = "Forwarding configurations to your home hosting queue backend...";
+            statusEl.innerText = "Checking backend allocations and registering subdomain...";
             statusEl.style.color = "#f5a623";
 
-            // Placeholder server target link until step 4 of backend cluster configuration deployment
-            const RAILWAY_BACKEND_URL = "https://railway.app";
+            try {
+                // Send a POST request to your Supabase table to register the data record
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/user_websites`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        user_id: session.user.id,
+                        user_email: session.user.email,
+                        subdomain: siteName,
+                        storage_used_bytes: 0
+                    })
+                });
 
-            statusEl.innerText = "Frontend Connected! Database logging active. Ready for deployment pipeline integration.";
-            statusEl.style.color = "#28a745";
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (data.message && data.message.includes('unique')) {
+                        throw new Error(`The subdomain "${siteName}" is already taken by another potato!`);
+                    }
+                    throw new Error(data.message || "Failed to register site data.");
+                }
+
+                statusEl.innerText = `Success! ${siteName}.potatohost.xyz has been locked in. Queued for pipeline integration! 🥔🚀`;
+                statusEl.style.color = "#28a745";
+                
+                // Clear inputs and refresh usage tracking metrics
+                document.getElementById('deploy-form').reset();
+                document.getElementById('subdomain-preview').innerText = "site-name.potatohost.xyz";
+                checkStorageLimits();
+
+            } catch (err) {
+                statusEl.innerText = "Error: " + err.message;
+                statusEl.style.color = "#e03131";
+                console.error(err);
+            }
         });
 
         // Logout routing logic
