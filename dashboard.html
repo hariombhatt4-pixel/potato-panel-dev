@@ -50,6 +50,21 @@
                 <button type="submit" style="width: 100%;">Deploy Site Live 🚀</button>
             </form>
             <p id="deploy-status" style="margin-top: 15px; font-weight: bold;"></p>
+                        <!-- DRAG & DROP ZONE -->
+            <div id="drop-zone" style="margin-top: 25px; background: #0f0f0f !important; border: 2px dashed #f5a623; border-radius: 8px; padding: 30px !important; text-align: center; cursor: pointer; transition: background 0.3s;">
+                <span style="font-size: 30px;">📁</span>
+                <h4 style="color: #f5a623; margin-top: 10px;">Drag & Drop Your Website Files Here</h4>
+                <p style="color: #666; font-size: 13px; margin-top: 5px;">Supports HTML, CSS, JS, and small images (Max 100MB folder total)</p>
+                <input type="file" id="file-input" multiple directory webkitdirectory mimetypes="text/html,text/css,application/javascript" style="display: none;">
+            </div>
+            <!-- SELECTED FILES FOOTPRINT PREVIEW -->
+            <div id="upload-preview-box" style="display: none; margin-top: 15px; background: #1a1a1a !important; padding: 15px !important; border: 1px solid #333;">
+                <p style="font-size: 14px; color: #cccccc; display: flex; justify-content: space-between;">
+                    <span>Total Selected Payload: <strong id="payload-size" style="color: #f5a623;">0.00 MB</strong></span>
+                    <span id="payload-status-text" style="font-weight: bold;">Ready 🟢</span>
+                </p>
+            </div>
+
         </div>
     </main>
 
@@ -177,6 +192,72 @@
                 console.error(err);
             }
         });
+
+                // --- DRAG & DROP CONTROLLER CORE ---
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const previewBox = document.getElementById('upload-preview-box');
+        const payloadSizeEl = document.getElementById('payload-size');
+        const payloadStatusEl = document.getElementById('payload-status-text');
+
+        // Clicking the box triggers hidden file browser explorer panel input window
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Highlight box borders during active files hover drag movements
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.style.background = '#221a0f';
+                dropZone.style.borderColor = '#d4891a';
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.style.background = '#0f0f0f';
+                dropZone.style.borderColor = '#f5a623';
+            }, false);
+        });
+
+        // Capture files dropped via drag actions
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            auditFilePayloadSizes(files);
+        });
+
+        // Capture files selected via manually picking from the folder menu window browser box
+        fileInput.addEventListener('change', (e) => {
+            auditFilePayloadSizes(e.target.files);
+        });
+
+        // Client-side execution loop calculates sizes immediately with 0% CPU strain
+        function auditFilePayloadSizes(files) {
+            if (!files || files.length === 0) return;
+
+            let totalBytes = 0;
+            previewBox.style.display = 'block';
+
+            // Loop through selected assets to measure exact byte footprint totals
+            for (let i = 0; i < files.length; i++) {
+                totalBytes += files[i].size;
+            }
+
+            const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
+            payloadSizeEl.innerText = `${totalMB} MB`;
+
+            // Heavy limit enforcement safety logic cut-offs
+            if (totalBytes > 100 * 1024 * 1024) {
+                payloadStatusEl.innerText = "OVER LIMIT ❌";
+                payloadStatusEl.style.color = "#e03131";
+                alert("Hold on! This file stack exceeds your 100 MB total user allocation block!");
+            } else {
+                payloadStatusEl.innerText = "Ready 🟢";
+                payloadStatusEl.style.color = "#28a745";
+            }
+        }
+
 
         // Logout routing logic
         document.getElementById('btn-logout').addEventListener('click', () => {
